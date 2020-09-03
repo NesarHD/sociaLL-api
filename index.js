@@ -44,7 +44,10 @@ app.use(morgan('combined')) // use 'tiny' or 'combined'
 
 // App Routes - Auth
 app.get('/', (req, res) => res.send('welcome to Socio'))
-app.get('/crud', (req, res) => main.getTableData(req, res, db))
+app.get('/api/users', (req, res) => main.getTableData(req, res, db))
+app.get('/api/users/:id', (req, res) => main.getUsersWithoutUser(req, res, db))
+app.get('/api/user/:id', (req, res) => main.getUserData(req, res, db))
+app.post('/api/friend-request/:id', (req, res) => main.friendRequest(req, res, db))
 app.post('/crud', (req, res) => main.postTableData(req, res, db))
 app.put('/crud', (req, res) => main.putTableData(req, res, db))
 app.delete('/crud', (req, res) => main.deleteTableData(req, res, db))
