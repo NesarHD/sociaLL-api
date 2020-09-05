@@ -16,6 +16,46 @@ const getUsers = (req, res, db) => {
     });
 };
 
+// Friends of friends
+const getFriendsOfFriends = (req, res, db) => {
+  const { id } = req.params;
+  db.select("friends")
+    .from("users")
+    .where("id", id)
+    .then((user) => {
+      if (user[0].friends && user[0].friends.length)
+        return db
+          .select("friends")
+          .from("users")
+          .whereIn("id", user[0].friends);
+      else return [];
+    })
+    .then((friendList) => {
+      let friendsOfFriends = [];
+      friendList.map((key, i) => {
+        friendsOfFriends = [...friendsOfFriends, ...friendList[i].friends];
+      });
+      friendsOfFriends = [...new Set(friendsOfFriends)];
+
+      friendsOfFriends.map((key, index) => {
+        if (friendsOfFriends[index] == id) friendsOfFriends.splice(index, 1);
+      });
+
+      return db.select("*").from("users").whereIn("id", friendsOfFriends);
+    })
+    .then((friends) => {
+      if (friends.length) {
+        res.json({ users: friends });
+      } else {
+        res.json({ users: [] });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ dbError: "db error" });
+    });
+};
+
 const getUsersWithoutUser = (req, res, db) => {
   const { id } = req.params;
   db.select("*")
@@ -76,14 +116,16 @@ const friendRequest = (req, res, db) => {
   db("users")
     .where({ id })
     .update({
-      friend_requested: knex.raw("array_append(friend_requested, ?)", [friendId]),
+      friend_requested: knex.raw("array_append(friend_requested, ?)", [
+        friendId,
+      ]),
     })
     .then(() => {
       return db("users")
         .where("id", friendId)
         .update({
           friend_request: knex.raw("array_append(friend_request, ?)", [id]),
-        })
+        });
     })
     .then((item) => {
       res.json(item);
@@ -103,17 +145,16 @@ const friendAccept = (req, res, db) => {
     .where({ id })
     .update({
       friends: knex.raw("array_append(friends, ?)", [friendId]),
-      friend_request: knex.raw("array_remove(friend_request, ?)", [friendId])
+      friend_request: knex.raw("array_remove(friend_request, ?)", [friendId]),
     })
-    .update({
-    })
+    .update({})
     .then(() => {
       return db("users")
         .where("id", friendId)
         .update({
           friend_requested: knex.raw("array_remove(friend_requested, ?)", [id]),
-          friends: knex.raw("array_append(friends, ?)", [id])
-        })
+          friends: knex.raw("array_append(friends, ?)", [id]),
+        });
     })
     .then((item) => {
       res.json(item);
@@ -155,5 +196,6 @@ module.exports = {
   getUserData,
   getUsersWithoutUser,
   friendRequest,
-  friendAccept
+  friendAccept,
+  getFriendsOfFriends,
 };

@@ -46,6 +46,7 @@ app.use(morgan('combined')) // use 'tiny' or 'combined'
 app.get('/', (req, res) => res.send('welcome to Socio'))
 app.get('/api/users', (req, res) => main.getUsers(req, res, db))
 app.get('/api/users/:id', (req, res) => main.getUsersWithoutUser(req, res, db))
+app.get('/api/friends-of-friends/:id', (req, res) => main.getFriendsOfFriends(req, res, db))
 app.get('/api/user/:id', (req, res) => main.getUserData(req, res, db))
 app.post('/api/friend-request/:id', (req, res) => main.friendRequest(req, res, db))
 app.post('/api/accept-friend/:id', (req, res) => main.friendAccept(req, res, db))
