@@ -14,8 +14,8 @@ CREATE TABLE users
  first VARCHAR(100),
  last VARCHAR(100),
  friends integer[],
- friendRequested integer[],
- friendRequest integer[],
+ friend_requested integer[],
+ friend_request integer[],
  avatar VARCHAR(100),
  added TIMESTAMP NOT NULL
 );
